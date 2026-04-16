@@ -483,12 +483,9 @@
 
 <script type="module">
   // ========== CONFIGURAÇÃO FIREBASE ==========
-  import {
-    escapeHtml,
-    sanitizeTag,
-    atualizarItemEditado,
-    aplicarDatasFixasAoItinerario
-  } from "./itinerary-utils.mjs";
+  import { initializeApp } from "firebase/app";
+  import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+  import { escapeHtml, sanitizeTag, atualizarItemEditado, reordenarItinerario } from "./itinerary-utils.mjs";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCc7QKMn05lHVwEAnrU6fqNuWW9Oyql9lQ",
@@ -501,9 +498,10 @@
 
   // Importante: as chaves abaixo identificam o app e devem ser protegidas por regras de segurança no Firestore.
   // Não confiar em validação apenas no cliente.
-  let docRef = null;
-  let getDocFn = null;
-  let setDocFn = null;
+  // Inicializa Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const docRef = doc(db, "roteiros", "viagem2026");
   
   // Estado global do roteiro
   let itinerario = [];
@@ -572,17 +570,16 @@
       ghostClass: 'sortable-ghost',
       handle: '.drag-handle',
       draggable: '.dia-card',
-      delayOnTouchOnly: true,
-      delay: 160,
-      touchStartThreshold: 8,
-      fallbackTolerance: 6,
-      onEnd: function(evt) {
-        if (evt.oldIndex === undefined || evt.newIndex === undefined) return;
-        const copia = [...itinerario];
-        const [movido] = copia.splice(evt.oldIndex, 1);
-        copia.splice(evt.newIndex, 0, movido);
-        itinerario = copia;
-        itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
+      onEnd: function() {
+        const orderIndices = [];
+        document.querySelectorAll('.dia-card').forEach(card => {
+          orderIndices.push(Number(card.dataset.index));
+        });
+        itinerario = reordenarItinerario(itinerario, orderIndices);
+        document.querySelectorAll('.dia-card').forEach((card, i) => {
+          card.dataset.index = i;
+          card.querySelector('.edit-btn').dataset.index = i;
+        });
         statusEl.innerText = '📋 Ordem alterada (não salva)';
         renderCards();
       }
