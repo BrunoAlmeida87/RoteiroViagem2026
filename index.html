@@ -143,7 +143,27 @@
       margin-bottom: 8px;
       border-bottom: 2px dotted #cdbaa4;
       padding-bottom: 6px;
+      padding-right: 38px;
     }
+    .drag-handle {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: #eff4e9;
+      color: #365a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: grab;
+      touch-action: none;
+      z-index: 5;
+    }
+    .drag-handle:active { cursor: grabbing; }
     .data-num {
       font-size: 1.8rem;
       font-weight: 500;
@@ -327,8 +347,21 @@
     }
 
     @media (max-width: 640px) {
-      h1 { font-size: 1.8rem; }
-      .calendario-grid { grid-template-columns: 1fr; }
+      body { padding: 12px 8px 24px; }
+      h1 { font-size: 1.55rem; padding-left: 14px; }
+      .subtitulo { padding-left: 14px; font-size: 0.92rem; }
+      .legenda { gap: 10px; padding: 10px 14px; border-radius: 20px; }
+      .calendario-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .dia-card { border-radius: 16px; padding: 36px 10px 10px; min-height: 170px; }
+      .cabecalho-dia { margin-bottom: 6px; padding-bottom: 4px; }
+      .data-num { font-size: 1.25rem; }
+      .dia-semana { font-size: 0.64rem; }
+      .cidade-titulo { font-size: 0.95rem; margin-top: 4px; }
+      .atividade { font-size: 0.78rem; margin-top: 6px; }
+      .tag { margin-top: 8px; font-size: 0.62rem; padding: 3px 8px; }
+      .drag-handle, .edit-btn { width: 28px; height: 28px; font-size: 0.85rem; top: 8px; }
+      .edit-btn { right: 8px; }
+      .drag-handle { left: 8px; }
       .subtitulo { flex-direction: column; align-items: start; gap: 12px; }
     }
   </style>
@@ -359,7 +392,7 @@
   <div class="atracoes-section">
     <h2>🌸✨ O que não perder em cada destino</h2>
     <div class="cidade-atracoes">
-      <div class="cidade-bloco"><strong>🇳🇱 Amsterdam</strong><ul>
+      <div class="cidade-bloco"><strong>🇳🇱 Amsterdã</strong><ul>
         <li><b>Museu Van Gogh</b> – a maior coleção do mundo.</li>
         <li><b>Rijksmuseum</b> – Rembrandt, Vermeer e mais.</li>
         <li><b>Cruzeiro pelos canais</b> – veja a cidade da água.</li>
@@ -435,7 +468,7 @@
     <label>📅 Data (fixa)</label>
     <input type="text" id="editData" disabled style="background:#f0ebe3;">
     <label>🏙️ Cidade</label>
-    <input type="text" id="editCidade" placeholder="Ex: Amsterdam">
+    <input type="text" id="editCidade" placeholder="Ex: Amsterdã">
     <label>📝 Atividade / descrição</label>
     <textarea id="editAtividade" placeholder="O que fazer..."></textarea>
     <label>🏷️ Tipo</label>
@@ -453,9 +486,16 @@
 </div>
 
 <script type="module">
-  // ========== CONFIGURAÇÃO FIREBASE (fornecida pelo usuário) ==========
+  // ========== CONFIGURAÇÃO FIREBASE ==========
   import { initializeApp } from "firebase/app";
   import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+  import {
+    escapeHtml,
+    sanitizeTag,
+    atualizarItemEditado,
+    reordenarItinerario,
+    aplicarDatasFixasAoItinerario
+  } from "./itinerary-utils.mjs";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCc7QKMn05lHVwEAnrU6fqNuWW9Oyql9lQ",
@@ -466,6 +506,8 @@
     appId: "1:399936835420:web:9128f9b7918173f77b3b99"
   };
 
+  // Importante: as chaves abaixo identificam o app e devem ser protegidas por regras de segurança no Firestore.
+  // Não confiar em validação apenas no cliente.
   // Inicializa Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -481,7 +523,7 @@
   
   // Dados iniciais (funcionam offline)
   const dadosIniciais = [
-    { data: "23/04", diaSemana: "Quinta", cidade: "Amsterdam → Terneuzen", atividade: "🛬 Chegada 15:30 · traslado (~2h) · check-in e noite tranquila.", tag: "viagem", emoji: "🇳🇱✈️" },
+    { data: "23/04", diaSemana: "Quinta", cidade: "Amsterdã → Terneuzen", atividade: "🛬 Chegada 15:30 · traslado (~2h) · check-in e noite tranquila.", tag: "viagem", emoji: "🇳🇱✈️" },
     { data: "24/04", diaSemana: "Sexta", cidade: "Terneuzen", atividade: "🌿 Dia inteiro na cidade · descanso, explorar calçadão, porto, moinhos locais.", tag: "descanso", emoji: "🇳🇱🏡" },
     { data: "25/04", diaSemana: "Sábado", cidade: "Antuérpia", atividade: "🚗 45min · Catedral, Grote Markt, MAS, diamantes e arte.", tag: "sugestao", emoji: "🇧🇪" },
     { data: "26/04", diaSemana: "Domingo", cidade: "Bruxelas", atividade: "🙏 Missa + passeio: Grand Place, Manneken Pis, Galeries Royales.", tag: "fixo", emoji: "🇧🇪⛪" },
@@ -496,8 +538,9 @@
     { data: "05/05", diaSemana: "Terça", cidade: "Lille", atividade: "🥖 Vieux-Lille, Palais des Beaux-Arts, Grand Place e cultura francesa.", tag: "sugestao", emoji: "🇫🇷🥖" },
     { data: "06/05", diaSemana: "Quarta", cidade: "Livre / Reserva", atividade: "🎯 Repetir cidade favorita, ou descanso extra · flexível para o que surgir.", tag: "descanso", emoji: "🗺️✨" },
     { data: "07/05", diaSemana: "Quinta", cidade: "Amsterdã / Haia", atividade: "🚗 Opção: segundo dia em Amsterdã (Museu Marítimo, A'DAM) ou Haia/Madurodam.", tag: "sugestao", emoji: "🇳🇱🌷" },
-    { data: "08/05", diaSemana: "Sexta", cidade: "Terneuzen → Amsterdam", atividade: "✈️ Check-out cedo · voo de retorno pela manhã. Fim da viagem.", tag: "viagem", emoji: "✈️🇳🇱" }
+    { data: "08/05", diaSemana: "Sexta", cidade: "Terneuzen → Amsterdã", atividade: "✈️ Check-out cedo · voo de retorno pela manhã. Fim da viagem.", tag: "viagem", emoji: "✈️🇳🇱" }
   ];
+  const agendaFixa = dadosIniciais.map((dia) => ({ data: dia.data, diaSemana: dia.diaSemana }));
 
   // Renderiza cards
   function renderCards() {
@@ -505,16 +548,17 @@
     itinerario.forEach((dia, idx) => {
       html += `
         <div class="dia-card" data-index="${idx}">
+          <button class="drag-handle" aria-label="Arrastar card" title="Arrastar card"><i class="fas fa-grip-lines"></i></button>
           <button class="edit-btn" data-index="${idx}" aria-label="Editar"><i class="fas fa-pencil-alt"></i></button>
           <div class="cabecalho-dia">
-            <span class="data-num">${dia.data.split('/')[0]}</span>
-            <span class="dia-semana">${dia.diaSemana}</span>
+            <span class="data-num">${escapeHtml(dia.data).split('/')[0]}</span>
+            <span class="dia-semana">${escapeHtml(dia.diaSemana)}</span>
           </div>
           <div class="cidade-titulo">
-            <span class="emoji-band">${dia.emoji || ''}</span> ${dia.cidade}
+            <span class="emoji-band">${escapeHtml(dia.emoji || '')}</span> ${escapeHtml(dia.cidade)}
           </div>
-          <div class="atividade">${dia.atividade}</div>
-          <span class="tag ${dia.tag}">${dia.tag.toUpperCase()}</span>
+          <div class="atividade">${escapeHtml(dia.atividade)}</div>
+          <span class="tag ${sanitizeTag(dia.tag)}">${escapeHtml(sanitizeTag(dia.tag).toUpperCase())}</span>
         </div>
       `;
     });
@@ -534,15 +578,16 @@
     sortableInstance = new Sortable(gridEl, {
       animation: 200,
       ghostClass: 'sortable-ghost',
-      handle: '.dia-card',
+      handle: '.drag-handle',
       draggable: '.dia-card',
       onEnd: function() {
-        const newOrder = [];
+        const orderIndices = [];
         document.querySelectorAll('.dia-card').forEach(card => {
-          const oldIndex = card.dataset.index;
-          newOrder.push(itinerario[oldIndex]);
+          orderIndices.push(Number(card.dataset.index));
         });
-        itinerario = newOrder;
+        itinerario = reordenarItinerario(itinerario, orderIndices);
+        itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
+        renderCards();
         document.querySelectorAll('.dia-card').forEach((card, i) => {
           card.dataset.index = i;
           card.querySelector('.edit-btn').dataset.index = i;
@@ -579,9 +624,11 @@
   window.saveEdit = function() {
     if (currentEditIndex === null) return;
     const idx = currentEditIndex;
-    itinerario[idx].cidade = editCidade.value;
-    itinerario[idx].atividade = editAtividade.value;
-    itinerario[idx].tag = editTag.value;
+    itinerario = atualizarItemEditado(itinerario, idx, {
+      cidade: editCidade.value.trim(),
+      atividade: editAtividade.value.trim(),
+      tag: editTag.value
+    });
     renderCards();
     closeModal();
     statusEl.innerText = '📝 Editado (não salvo na nuvem)';
@@ -593,12 +640,20 @@
 
   // Firebase: carregar dados
   async function carregarDoFirestore() {
+    itinerario = [...dadosIniciais];
+    renderCards();
     try {
-      const snap = await getDoc(docRef);
+      const snap = await Promise.race([
+        getDoc(docRef),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout de carregamento')), 4500)
+        )
+      ]);
       if (snap.exists()) {
         const data = snap.data();
         if (data.dias && Array.isArray(data.dias)) {
           itinerario = data.dias;
+          itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
           statusEl.innerText = '✅ Roteiro carregado da nuvem';
         } else {
           itinerario = [...dadosIniciais];
@@ -631,9 +686,7 @@
   // Inicialização
   carregarDoFirestore();
 
-  // Expor funções globais
-  window.closeModal = closeModal;
-  window.saveEdit = saveEdit;
+  // Funções já expostas acima em window.closeModal/window.saveEdit.
 </script>
 </body>
 </html>
