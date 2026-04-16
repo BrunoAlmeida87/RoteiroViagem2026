@@ -489,13 +489,7 @@
   // ========== CONFIGURAÇÃO FIREBASE ==========
   import { initializeApp } from "firebase/app";
   import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-  import {
-    escapeHtml,
-    sanitizeTag,
-    atualizarItemEditado,
-    reordenarItinerario,
-    aplicarDatasFixasAoItinerario
-  } from "./itinerary-utils.mjs";
+  import { escapeHtml, sanitizeTag, atualizarItemEditado, reordenarItinerario, aplicarDatasFixasAoItinerario } from "./itinerary-utils.mjs";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCc7QKMn05lHVwEAnrU6fqNuWW9Oyql9lQ",
@@ -587,12 +581,8 @@
         });
         itinerario = reordenarItinerario(itinerario, orderIndices);
         itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
-        renderCards();
-        document.querySelectorAll('.dia-card').forEach((card, i) => {
-          card.dataset.index = i;
-          card.querySelector('.edit-btn').dataset.index = i;
-        });
         statusEl.innerText = '📋 Ordem alterada (não salva)';
+        renderCards();
       }
     });
   }
