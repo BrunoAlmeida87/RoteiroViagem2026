@@ -28,3 +28,11 @@ export function atualizarItemEditado(itinerario, index, dadosAtualizados) {
 export function reordenarItinerario(itinerario, orderIndices) {
   return orderIndices.map((idx) => itinerario[idx]).filter(Boolean);
 }
+
+export function aplicarDatasFixasAoItinerario(itinerario, agendaFixa) {
+  return itinerario.map((item, index) => ({
+    ...item,
+    data: agendaFixa[index]?.data ?? item.data,
+    diaSemana: agendaFixa[index]?.diaSemana ?? item.diaSemana
+  }));
+}

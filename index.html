@@ -143,7 +143,27 @@
       margin-bottom: 8px;
       border-bottom: 2px dotted #cdbaa4;
       padding-bottom: 6px;
+      padding-right: 38px;
     }
+    .drag-handle {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: #eff4e9;
+      color: #365a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: grab;
+      touch-action: none;
+      z-index: 5;
+    }
+    .drag-handle:active { cursor: grabbing; }
     .data-num {
       font-size: 1.8rem;
       font-weight: 500;
@@ -327,8 +347,21 @@
     }
 
     @media (max-width: 640px) {
-      h1 { font-size: 1.8rem; }
-      .calendario-grid { grid-template-columns: 1fr; }
+      body { padding: 12px 8px 24px; }
+      h1 { font-size: 1.55rem; padding-left: 14px; }
+      .subtitulo { padding-left: 14px; font-size: 0.92rem; }
+      .legenda { gap: 10px; padding: 10px 14px; border-radius: 20px; }
+      .calendario-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .dia-card { border-radius: 16px; padding: 36px 10px 10px; min-height: 170px; }
+      .cabecalho-dia { margin-bottom: 6px; padding-bottom: 4px; }
+      .data-num { font-size: 1.25rem; }
+      .dia-semana { font-size: 0.64rem; }
+      .cidade-titulo { font-size: 0.95rem; margin-top: 4px; }
+      .atividade { font-size: 0.78rem; margin-top: 6px; }
+      .tag { margin-top: 8px; font-size: 0.62rem; padding: 3px 8px; }
+      .drag-handle, .edit-btn { width: 28px; height: 28px; font-size: 0.85rem; top: 8px; }
+      .edit-btn { right: 8px; }
+      .drag-handle { left: 8px; }
       .subtitulo { flex-direction: column; align-items: start; gap: 12px; }
     }
   </style>
@@ -456,7 +489,13 @@
   // ========== CONFIGURAÇÃO FIREBASE ==========
   import { initializeApp } from "firebase/app";
   import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-  import { escapeHtml, sanitizeTag, atualizarItemEditado, reordenarItinerario } from "./itinerary-utils.mjs";
+  import {
+    escapeHtml,
+    sanitizeTag,
+    atualizarItemEditado,
+    reordenarItinerario,
+    aplicarDatasFixasAoItinerario
+  } from "./itinerary-utils.mjs";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCc7QKMn05lHVwEAnrU6fqNuWW9Oyql9lQ",
@@ -501,6 +540,7 @@
     { data: "07/05", diaSemana: "Quinta", cidade: "Amsterdã / Haia", atividade: "🚗 Opção: segundo dia em Amsterdã (Museu Marítimo, A'DAM) ou Haia/Madurodam.", tag: "sugestao", emoji: "🇳🇱🌷" },
     { data: "08/05", diaSemana: "Sexta", cidade: "Terneuzen → Amsterdã", atividade: "✈️ Check-out cedo · voo de retorno pela manhã. Fim da viagem.", tag: "viagem", emoji: "✈️🇳🇱" }
   ];
+  const agendaFixa = dadosIniciais.map((dia) => ({ data: dia.data, diaSemana: dia.diaSemana }));
 
   // Renderiza cards
   function renderCards() {
@@ -508,6 +548,7 @@
     itinerario.forEach((dia, idx) => {
       html += `
         <div class="dia-card" data-index="${idx}">
+          <button class="drag-handle" aria-label="Arrastar card" title="Arrastar card"><i class="fas fa-grip-lines"></i></button>
           <button class="edit-btn" data-index="${idx}" aria-label="Editar"><i class="fas fa-pencil-alt"></i></button>
           <div class="cabecalho-dia">
             <span class="data-num">${escapeHtml(dia.data).split('/')[0]}</span>
@@ -537,7 +578,7 @@
     sortableInstance = new Sortable(gridEl, {
       animation: 200,
       ghostClass: 'sortable-ghost',
-      handle: '.dia-card',
+      handle: '.drag-handle',
       draggable: '.dia-card',
       onEnd: function() {
         const orderIndices = [];
@@ -545,11 +586,9 @@
           orderIndices.push(Number(card.dataset.index));
         });
         itinerario = reordenarItinerario(itinerario, orderIndices);
-        document.querySelectorAll('.dia-card').forEach((card, i) => {
-          card.dataset.index = i;
-          card.querySelector('.edit-btn').dataset.index = i;
-        });
+        itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
         statusEl.innerText = '📋 Ordem alterada (não salva)';
+        renderCards();
       }
     });
   }
@@ -597,12 +636,20 @@
 
   // Firebase: carregar dados
   async function carregarDoFirestore() {
+    itinerario = [...dadosIniciais];
+    renderCards();
     try {
-      const snap = await getDoc(docRef);
+      const snap = await Promise.race([
+        getDoc(docRef),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout de carregamento')), 4500)
+        )
+      ]);
       if (snap.exists()) {
         const data = snap.data();
         if (data.dias && Array.isArray(data.dias)) {
           itinerario = data.dias;
+          itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
           statusEl.innerText = '✅ Roteiro carregado da nuvem';
         } else {
           itinerario = [...dadosIniciais];
@@ -635,9 +682,7 @@
   // Inicialização
   carregarDoFirestore();
 
-  // Expor funções globais
-  window.closeModal = closeModal;
-  window.saveEdit = saveEdit;
+  // Funções já expostas acima em window.closeModal/window.saveEdit.
 </script>
 </body>
 </html>

@@ -4,7 +4,8 @@ import {
   escapeHtml,
   sanitizeTag,
   atualizarItemEditado,
-  reordenarItinerario
+  reordenarItinerario,
+  aplicarDatasFixasAoItinerario
 } from "./itinerary-utils.mjs";
 
 test("escapeHtml neutraliza tags maliciosas", () => {
@@ -50,4 +51,22 @@ test("reordenarItinerario segue índices informados", () => {
     { data: "23/04" },
     { data: "24/04" }
   ]);
+});
+
+test("aplicarDatasFixasAoItinerario remaneja data e dia da semana por posição", () => {
+  const itinerario = [
+    { data: "03/05", diaSemana: "Domingo", cidade: "Cidade A" },
+    { data: "23/04", diaSemana: "Quinta", cidade: "Cidade B" }
+  ];
+  const agendaFixa = [
+    { data: "23/04", diaSemana: "Quinta" },
+    { data: "24/04", diaSemana: "Sexta" }
+  ];
+
+  const resultado = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
+
+  assert.equal(resultado[0].data, "23/04");
+  assert.equal(resultado[0].diaSemana, "Quinta");
+  assert.equal(resultado[1].data, "24/04");
+  assert.equal(resultado[1].diaSemana, "Sexta");
 });
