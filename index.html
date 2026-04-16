@@ -141,28 +141,25 @@
       padding-bottom: 6px;
       padding-right: 38px;
     }
-    .drag-zone {
+    .drag-handle {
       position: absolute;
-      top: 8px;
-      left: 10px;
-      right: 46px;
-      height: 24px;
-      border-radius: 999px;
+      top: 12px;
+      left: 12px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
       background: #eff4e9;
       color: #365a3a;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .4px;
+      font-size: 1rem;
       cursor: grab;
       touch-action: none;
       z-index: 5;
     }
-    .drag-zone:active { cursor: grabbing; }
+    .drag-handle:active { cursor: grabbing; }
     .data-num {
       font-size: 1.8rem;
       font-weight: 500;
@@ -351,16 +348,16 @@
       .subtitulo { padding-left: 14px; font-size: 0.92rem; }
       .legenda { gap: 10px; padding: 10px 14px; border-radius: 20px; }
       .calendario-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-      .dia-card { border-radius: 14px; padding: 34px 8px 8px; min-height: 138px; }
+      .dia-card { border-radius: 16px; padding: 36px 10px 10px; min-height: 170px; }
       .cabecalho-dia { margin-bottom: 6px; padding-bottom: 4px; }
       .data-num { font-size: 1.25rem; }
       .dia-semana { font-size: 0.64rem; }
       .cidade-titulo { font-size: 0.95rem; margin-top: 4px; }
       .atividade { font-size: 0.78rem; margin-top: 6px; }
       .tag { margin-top: 8px; font-size: 0.62rem; padding: 3px 8px; }
-      .drag-zone { left: 8px; right: 40px; height: 22px; font-size: 0.64rem; top: 6px; }
-      .edit-btn { width: 26px; height: 26px; font-size: 0.78rem; top: 6px; }
+      .drag-handle, .edit-btn { width: 28px; height: 28px; font-size: 0.85rem; top: 8px; }
       .edit-btn { right: 8px; }
+      .drag-handle { left: 8px; }
       .subtitulo { flex-direction: column; align-items: start; gap: 12px; }
     }
   </style>
@@ -486,12 +483,9 @@
 
 <script type="module">
   // ========== CONFIGURAÇÃO FIREBASE ==========
-  import {
-    escapeHtml,
-    sanitizeTag,
-    atualizarItemEditado,
-    aplicarDatasFixasAoItinerario
-  } from "./itinerary-utils.mjs";
+  import { initializeApp } from "firebase/app";
+  import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+  import { escapeHtml, sanitizeTag, atualizarItemEditado, reordenarItinerario } from "./itinerary-utils.mjs";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCc7QKMn05lHVwEAnrU6fqNuWW9Oyql9lQ",
@@ -504,9 +498,10 @@
 
   // Importante: as chaves abaixo identificam o app e devem ser protegidas por regras de segurança no Firestore.
   // Não confiar em validação apenas no cliente.
-  let docRef = null;
-  let getDocFn = null;
-  let setDocFn = null;
+  // Inicializa Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const docRef = doc(db, "roteiros", "viagem2026");
   
   // Estado global do roteiro
   let itinerario = [];
@@ -543,11 +538,11 @@
     itinerario.forEach((dia, idx) => {
       html += `
         <div class="dia-card" data-index="${idx}">
-          <div class="drag-zone" aria-label="Arrastar card" title="Arrastar card"><i class="fas fa-grip-lines"></i><span>Arrastar</span></div>
+          <button class="drag-handle" aria-label="Arrastar card" title="Arrastar card"><i class="fas fa-grip-lines"></i></button>
           <button class="edit-btn" data-index="${idx}" aria-label="Editar"><i class="fas fa-pencil-alt"></i></button>
           <div class="cabecalho-dia">
-            <span class="data-num">${escapeHtml((agendaFixa[idx]?.data ?? dia.data)).split('/')[0]}</span>
-            <span class="dia-semana">${escapeHtml(agendaFixa[idx]?.diaSemana ?? dia.diaSemana)}</span>
+            <span class="data-num">${escapeHtml(dia.data).split('/')[0]}</span>
+            <span class="dia-semana">${escapeHtml(dia.diaSemana)}</span>
           </div>
           <div class="cidade-titulo">
             <span class="emoji-band">${escapeHtml(dia.emoji || '')}</span> ${escapeHtml(dia.cidade)}
@@ -573,19 +568,18 @@
     sortableInstance = new Sortable(gridEl, {
       animation: 200,
       ghostClass: 'sortable-ghost',
-      handle: '.drag-zone',
+      handle: '.drag-handle',
       draggable: '.dia-card',
-      delayOnTouchOnly: true,
-      delay: 220,
-      touchStartThreshold: 12,
-      fallbackTolerance: 10,
-      onEnd: function(evt) {
-        if (evt.oldIndex === undefined || evt.newIndex === undefined) return;
-        const copia = [...itinerario];
-        const [movido] = copia.splice(evt.oldIndex, 1);
-        copia.splice(evt.newIndex, 0, movido);
-        itinerario = copia;
-        itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
+      onEnd: function() {
+        const orderIndices = [];
+        document.querySelectorAll('.dia-card').forEach(card => {
+          orderIndices.push(Number(card.dataset.index));
+        });
+        itinerario = reordenarItinerario(itinerario, orderIndices);
+        document.querySelectorAll('.dia-card').forEach((card, i) => {
+          card.dataset.index = i;
+          card.querySelector('.edit-btn').dataset.index = i;
+        });
         statusEl.innerText = '📋 Ordem alterada (não salva)';
         renderCards();
       }
@@ -625,7 +619,6 @@
       atividade: editAtividade.value.trim(),
       tag: editTag.value
     });
-    itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
     renderCards();
     closeModal();
     statusEl.innerText = '📝 Editado (não salvo na nuvem)';
@@ -676,9 +669,7 @@
       return;
     }
     try {
-      const diasNormalizados = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
-      itinerario = diasNormalizados;
-      await setDocFn(docRef, { dias: diasNormalizados, ultimaAtualizacao: new Date().toISOString() });
+      await setDocFn(docRef, { dias: itinerario, ultimaAtualizacao: new Date().toISOString() });
       statusEl.innerText = '💾 Salvo com sucesso no Firebase!';
     } catch (e) {
       alert('Erro ao salvar: ' + e.message);
