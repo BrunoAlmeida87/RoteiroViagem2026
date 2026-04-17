@@ -19,6 +19,9 @@
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1e4a2b">
   
   <style>
     * {
@@ -362,6 +365,46 @@
       line-height: 1.4;
     }
 
+    .install-button {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e4a2b;
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(30,40,20,0.25);
+      transition: 0.2s;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .install-button.show {
+      display: flex;
+      animation: slideUp 0.3s ease-out;
+    }
+    .install-button:hover {
+      background: #2d6a3b;
+      box-shadow: 0 12px 24px rgba(30,40,20,0.3);
+      transform: translateY(-2px);
+    }
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
     @media (max-width: 640px) {
       body { padding: 12px 8px 24px; }
       h1 { font-size: 1.55rem; padding-left: 14px; }
@@ -474,6 +517,11 @@
       </ul></details></div>
     </div>
   </div>
+
+  <!-- Botão de instalação PWA -->
+  <button class="install-button" id="installButton" aria-label="Instalar app">
+    <i class="fas fa-download"></i> Instalar na tela inicial
+  </button>
 </div>
 
 <!-- Modal de Edição -->
@@ -744,6 +792,41 @@
       console.warn('Falha ao carregar do Firebase:', e);
       statusEl.innerText = '⚠️ Offline (dados locais)';
     });
+
+  // ========== PWA INSTALLATION ==========
+  let deferredPrompt;
+  const installBtn = document.getElementById('installButton');
+
+  // Registrar service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('✅ Service Worker registrado'))
+      .catch(err => console.warn('⚠️ Erro ao registrar SW:', err));
+  }
+
+  // Capturar evento de instalação
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.classList.add('show');
+  });
+
+  // Clicar no botão dispara o prompt
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`Usuário respondeu: ${outcome}`);
+    deferredPrompt = null;
+    installBtn.classList.remove('show');
+  });
+
+  // Esconder botão quando app é instalado
+  window.addEventListener('appinstalled', () => {
+    console.log('✅ App instalado com sucesso!');
+    deferredPrompt = null;
+    installBtn.classList.remove('show');
+  });
 </script>
 </body>
 </html>
