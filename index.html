@@ -376,7 +376,7 @@
       cursor: pointer;
       box-shadow: 0 8px 16px rgba(30,40,20,0.25);
       transition: 0.2s;
-      display: none;
+      display: inline-flex;
       align-items: center;
       gap: 10px;
       margin-top: 40px;
@@ -387,6 +387,10 @@
     }
     .install-button.show {
       display: inline-flex;
+    }
+    .install-button:hover {
+      background: #2d6a3b;
+      box-shadow: 0 12px 24px rgba(30,40,20,0.3);
     }
     .install-button:hover {
       background: #2d6a3b;
