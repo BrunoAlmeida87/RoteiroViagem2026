@@ -166,7 +166,7 @@
     }
     .drag-handle:active { cursor: grabbing; }
     .data-num {
-      font-size: 1.8rem;
+      font-size: 1.2rem;
       font-weight: 500;
       line-height: 1;
       color: #1e3b2a;
@@ -370,7 +370,7 @@
       .calendario-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
       .dia-card { border-radius: 16px; padding: 36px 10px 10px; min-height: 170px; }
       .cabecalho-dia { margin-bottom: 6px; padding-bottom: 4px; }
-      .data-num { font-size: 1.25rem; }
+      .data-num { font-size: 1.6rem; }
       .dia-semana { font-size: 0.64rem; }
       .cidade-titulo { font-size: 0.95rem; margin-top: 4px; }
       .atividade { font-size: 0.78rem; margin-top: 6px; }
@@ -721,11 +721,15 @@
 
   async function salvarNoFirestore() {
     try {
-      await setDoc(docRef, { dias: itinerario, ultimaAtualizacao: new Date().toISOString() });
+      console.log('Iniciando salvamento...', { itinerario, docRef });
+      const payload = { dias: itinerario, ultimaAtualizacao: new Date().toISOString() };
+      await setDoc(docRef, payload);
+      console.log('✅ Salvo com sucesso');
       statusEl.innerText = '💾 Salvo com sucesso no Firebase!';
     } catch (e) {
+      console.error('❌ Erro ao salvar:', e);
       alert('Erro ao salvar: ' + e.message);
-      statusEl.innerText = '❌ Erro ao salvar';
+      statusEl.innerText = '❌ Erro ao salvar: ' + e.code;
     }
   }
 
