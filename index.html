@@ -16,7 +16,7 @@
   </script>
   
   <!-- SortableJS para arraste com toque -->
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- Web App Manifest -->
@@ -665,7 +665,8 @@
     const dia = itinerario[index];
     currentEditIndex = index;
     editIndex.value = index;
-    editData.value = `${dia.data} (${dia.diaSemana})`;
+    const dataSlot = agendaFixa[index] || { data: dia.data, diaSemana: dia.diaSemana };
+    editData.value = `${dataSlot.data} (${dataSlot.diaSemana})`;
     editCidade.value = dia.cidade;
     editAtividade.value = dia.atividade;
     editTag.value = dia.tag;
