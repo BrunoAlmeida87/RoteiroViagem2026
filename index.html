@@ -120,6 +120,7 @@
       box-shadow: 0 10px 18px -6px rgba(30,40,20,0.12);
       transition: transform 0.1s, box-shadow 0.2s;
       border: 1px solid #e7dfcf;
+      border-left: 6px solid #999;
       display: flex;
       flex-direction: column;
       cursor: default;
@@ -127,6 +128,10 @@
       touch-action: pan-y;
       position: relative;
     }
+    .dia-card.fixo { border-left-color: #c44f4f; }
+    .dia-card.sugestao { border-left-color: #4f7e6b; }
+    .dia-card.descanso { border-left-color: #d9a066; }
+    .dia-card.viagem { border-left-color: #7b8a9e; }
     .sortable-ghost {
       opacity: 0.4;
       background: #d4d9c7;
@@ -245,6 +250,9 @@
       justify-content: center;
       z-index: 1000;
     }
+    .modal-overlay[aria-modal="true"] {
+      display: flex;
+    }
     .modal {
       background: #fefcf7;
       border-radius: 36px;
@@ -253,6 +261,7 @@
       width: 90%;
       box-shadow: 0 30px 40px rgba(0,0,0,0.2);
       border: 1px solid #ddd2be;
+      outline: none;
     }
     .modal h3 {
       color: #1e4a2b;
@@ -324,13 +333,24 @@
       border-radius: 28px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.02);
     }
-    .cidade-bloco strong {
+    details {
+      cursor: pointer;
+    }
+    summary {
       font-size: 1.3rem;
+      font-weight: 700;
       display: block;
       border-bottom: 2px solid #b3a086;
       padding-bottom: 6px;
       margin-bottom: 12px;
       color: #1e4a2b;
+      user-select: none;
+    }
+    summary:hover {
+      color: #2d6a3b;
+    }
+    summary::marker {
+      color: #7a6e5d;
     }
     .cidade-bloco ul {
       list-style-type: '✨ ';
@@ -388,78 +408,78 @@
   <div class="atracoes-section">
     <h2>🌸✨ O que não perder em cada destino</h2>
     <div class="cidade-atracoes">
-      <div class="cidade-bloco"><strong>🇳🇱 Amsterdã</strong><ul>
+      <div class="cidade-bloco"><details><summary>🇳🇱 Amsterdã</summary><ul>
         <li><b>Museu Van Gogh</b> – a maior coleção do mundo.</li>
         <li><b>Rijksmuseum</b> – Rembrandt, Vermeer e mais.</li>
         <li><b>Cruzeiro pelos canais</b> – veja a cidade da água.</li>
         <li><b>Casa de Anne Frank</b> (ingressos antecipados).</li>
         <li><b>Jordaan & Vondelpark</b> – bairro charmoso e parque.</li>
         <li><b>Museu Marítimo</b> – réplica de navio da VOC.</li>
-      </ul></div>
-      <div class="cidade-bloco"><strong>🇧🇪 Bruxelas</strong><ul>
+      </ul></details></div>
+      <div class="cidade-bloco"><details><summary>🇧🇪 Bruxelas</summary><ul>
         <li><b>Grand Place</b> – Patrimônio da Humanidade.</li>
         <li><b>Manneken Pis</b> – ícone irreverente.</li>
         <li><b>Atomium</b> – estrutura futurista dos anos 50.</li>
         <li><b>Palácio Real</b> e <b>Parc de Bruxelles</b>.</li>
         <li><b>Galeries Royales Saint-Hubert</b> – compras elegantes.</li>
         <li><b>Museu Magritte</b> – surrealismo belga.</li>
-      </ul></div>
-      <div class="cidade-bloco"><strong>🇧🇪 Bruges</strong><ul>
+      </ul></details></div>
+      <div class="cidade-bloco"><details><summary>🇧🇪 Bruges</summary><ul>
         <li><b>Praça Markt & Belfort</b> – suba os 366 degraus.</li>
         <li><b>Rozenhoedkaai</b> – o canto mais fotografado.</li>
         <li><b>Begijnhof</b> – jardim histórico tranquilo.</li>
         <li><b>Igreja de Nossa Senhora</b> – com Madonna de Michelangelo.</li>
         <li><b>Passeio de barco pelos canais</b>.</li>
         <li><b>Museu Groeninge</b> – primitivos flamengos.</li>
-      </ul></div>
-      <div class="cidade-bloco"><strong>🧀 Gouda</strong><ul>
+      </ul></details></div>
+      <div class="cidade-bloco"><details><summary>🧀 Gouda</summary><ul>
         <li><b>Sint-Janskerk</b> – os vitrais mais famosos da Holanda.</li>
         <li><b>Mercado de queijo</b> (às quintas no verão).</li>
         <li><b>Prefeitura gótica</b> (Stadhuis) na praça central.</li>
         <li><b>Museu do Queijo</b> – história e degustação.</li>
         <li><b>Canais com armazéns históricos</b>.</li>
         <li><b>Stroopwafels</b> frescos na feira.</li>
-      </ul></div>
-      <div class="cidade-bloco"><strong>💎 Antuérpia</strong><ul>
+      </ul></details></div>
+      <div class="cidade-bloco"><details><summary>💎 Antuérpia</summary><ul>
         <li><b>Catedral de Nossa Senhora</b> – obras de Rubens.</li>
         <li><b>Grote Markt</b> com a fonte Brabo.</li>
         <li><b>Museu MAS</b> – vista panorâmica gratuita no topo.</li>
         <li><b>Bairro dos diamantes</b> – perto da estação.</li>
         <li><b>Rubenshuis</b> – casa-ateliê do mestre.</li>
         <li><b>Sint-Annatunnel</b> – túnel pedonal sob o Escalda.</li>
-      </ul></div>
-      <div class="cidade-bloco"><strong>🇫🇷 Lille</strong><ul>
+      </ul></details></div>
+      <div class="cidade-bloco"><details><summary>🇫🇷 Lille</summary><ul>
         <li><b>Grand Place (Place du Général de Gaulle)</b> e Vieille Bourse.</li>
         <li><b>Palais des Beaux-Arts</b> – um dos maiores da França.</li>
         <li><b>Cidadela de Lille</b> – fortaleza de Vauban.</li>
         <li><b>Porte de Paris</b> – arco triunfal.</li>
         <li><b>Vieux-Lille</b> – ruas de paralelepípedos e boutiques.</li>
         <li><b>Catedral de Notre-Dame-de-la-Treille</b>.</li>
-      </ul></div>
-      <div class="cidade-bloco"><strong>🌷 Keukenhof</strong><ul>
+      </ul></details></div>
+      <div class="cidade-bloco"><details><summary>🌷 Keukenhof</summary><ul>
         <li><b>Jardins temáticos</b> – tulipas, jacintos, narcisos.</li>
         <li><b>Moinho de vento histórico</b> com vista.</li>
         <li><b>Pavilhão Beatrix</b> – orquídeas e antúrios.</li>
         <li><b>Passeio de barco elétrico</b> pelos canais floridos.</li>
         <li><b>Inspiration gardens</b> – ideias para jardins.</li>
         <li><b>Esculturas ao ar livre</b>.</li>
-      </ul></div>
-      <div class="cidade-bloco"><strong>🏡 Terneuzen & arredores</strong><ul>
+      </ul></details></div>
+      <div class="cidade-bloco"><details><summary>🏡 Terneuzen & arredores</summary><ul>
         <li><b>Calçadão à beira-mar</b> – ideal para caminhadas.</li>
         <li><b>Museu Portuário</b> – história do canal Gent-Terneuzen.</li>
         <li><b>Fortes de Terneuzen</b> (vestígios históricos).</li>
         <li><b>Praia de Cadzand</b> – a 25 min, perfeita para relaxar.</li>
         <li><b>Reserva natural Het Zwin</b> – aves e paisagem.</li>
         <li><b>Passeio de bicicleta pela Zeeuws-Vlaanderen</b>.</li>
-      </ul></div>
+      </ul></details></div>
     </div>
   </div>
 </div>
 
 <!-- Modal de Edição -->
-<div class="modal-overlay" id="editModal">
+<div class="modal-overlay" id="editModal" role="dialog" aria-modal="false" aria-labelledby="editModalTitle">
   <div class="modal">
-    <h3><i class="fas fa-pen"></i> Editar dia</h3>
+    <h3 id="editModalTitle"><i class="fas fa-pen"></i> Editar dia</h3>
     <input type="hidden" id="editIndex">
     <label>📅 Data (fixa)</label>
     <input type="text" id="editData" disabled style="background:#f0ebe3;">
@@ -475,8 +495,8 @@
       <option value="viagem">🔵 Viagem</option>
     </select>
     <div class="modal-actions">
-      <button onclick="closeModal()">Cancelar</button>
-      <button class="primary" onclick="saveEdit()">Salvar</button>
+      <button id="cancelBtn">Cancelar</button>
+      <button class="primary" id="saveBtn">Salvar</button>
     </div>
   </div>
 </div>
@@ -485,7 +505,7 @@
   // ========== CONFIGURAÇÃO FIREBASE ==========
   import { initializeApp } from "firebase/app";
   import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-  import { escapeHtml, sanitizeTag, atualizarItemEditado, reordenarItinerario } from "./itinerary-utils.mjs";
+  import { escapeHtml, sanitizeTag, atualizarItemEditado, reordenarItinerario, aplicarDatasFixasAoItinerario } from "./itinerary-utils.mjs";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCc7QKMn05lHVwEAnrU6fqNuWW9Oyql9lQ",
@@ -536,19 +556,20 @@
   function renderCards() {
     let html = '';
     itinerario.forEach((dia, idx) => {
+      const tagSanitized = sanitizeTag(dia.tag);
       html += `
-        <div class="dia-card" data-index="${idx}">
+        <div class="dia-card ${tagSanitized}" data-index="${idx}">
           <button class="drag-handle" aria-label="Arrastar card" title="Arrastar card"><i class="fas fa-grip-lines"></i></button>
           <button class="edit-btn" data-index="${idx}" aria-label="Editar"><i class="fas fa-pencil-alt"></i></button>
           <div class="cabecalho-dia">
-            <span class="data-num">${escapeHtml(dia.data).split('/')[0]}</span>
+            <span class="data-num">${escapeHtml(dia.data)}</span>
             <span class="dia-semana">${escapeHtml(dia.diaSemana)}</span>
           </div>
           <div class="cidade-titulo">
             <span class="emoji-band">${escapeHtml(dia.emoji || '')}</span> ${escapeHtml(dia.cidade)}
           </div>
           <div class="atividade">${escapeHtml(dia.atividade)}</div>
-          <span class="tag ${sanitizeTag(dia.tag)}">${escapeHtml(sanitizeTag(dia.tag).toUpperCase())}</span>
+          <span class="tag ${tagSanitized}">${escapeHtml(tagSanitized.toUpperCase())}</span>
         </div>
       `;
     });
@@ -576,11 +597,12 @@
           orderIndices.push(Number(card.dataset.index));
         });
         itinerario = reordenarItinerario(itinerario, orderIndices);
+        itinerario = aplicarDatasFixasAoItinerario(itinerario, agendaFixa);
         document.querySelectorAll('.dia-card').forEach((card, i) => {
           card.dataset.index = i;
           card.querySelector('.edit-btn').dataset.index = i;
         });
-        statusEl.innerText = '📋 Ordem alterada (não salva)';
+        statusEl.innerText = '📋 Ordem alterada (datas atualizadas)';
         renderCards();
       }
     });
@@ -589,13 +611,16 @@
   // Modal
   let currentEditIndex = null;
   const modal = document.getElementById('editModal');
+  const modalContent = modal.querySelector('.modal');
   const editIndex = document.getElementById('editIndex');
   const editData = document.getElementById('editData');
   const editCidade = document.getElementById('editCidade');
   const editAtividade = document.getElementById('editAtividade');
   const editTag = document.getElementById('editTag');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const saveBtn = document.getElementById('saveBtn');
 
-  window.openEditModal = function(index) {
+  function openEditModal(index) {
     const dia = itinerario[index];
     currentEditIndex = index;
     editIndex.value = index;
@@ -603,14 +628,18 @@
     editCidade.value = dia.cidade;
     editAtividade.value = dia.atividade;
     editTag.value = dia.tag;
+    modal.setAttribute('aria-modal', 'true');
     modal.style.display = 'flex';
-  };
+    modalContent.focus();
+  }
 
-  window.closeModal = function() {
+  function closeModal() {
+    modal.setAttribute('aria-modal', 'false');
     modal.style.display = 'none';
-  };
+    currentEditIndex = null;
+  }
 
-  window.saveEdit = function() {
+  function saveEdit() {
     if (currentEditIndex === null) return;
     const idx = currentEditIndex;
     itinerario = atualizarItemEditado(itinerario, idx, {
@@ -621,20 +650,49 @@
     renderCards();
     closeModal();
     statusEl.innerText = '📝 Editado (não salvo na nuvem)';
-  };
+  }
 
+  cancelBtn.addEventListener('click', closeModal);
+  saveBtn.addEventListener('click', saveEdit);
+
+  // Modal backdrop click
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
 
+  // Escape key closes modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.getAttribute('aria-modal') === 'true') {
+      closeModal();
+    }
+  });
+
+  // Focus trap in modal
+  const focusableElements = 'input, textarea, select, button';
+  modalContent.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const focusables = Array.from(modalContent.querySelectorAll(focusableElements));
+    if (focusables.length === 0) return;
+    const firstFocusable = focusables[0];
+    const lastFocusable = focusables[focusables.length - 1];
+    const isOnFirst = document.activeElement === firstFocusable;
+    const isOnLast = document.activeElement === lastFocusable;
+    if (e.shiftKey && isOnFirst) {
+      e.preventDefault();
+      lastFocusable.focus();
+    } else if (!e.shiftKey && isOnLast) {
+      e.preventDefault();
+      firstFocusable.focus();
+    }
+  });
+
   // Firebase: carregar dados
   async function carregarDoFirestore() {
-    if (!docRef || !getDocFn) return;
     itinerario = [...dadosIniciais];
     renderCards();
     try {
       const snap = await Promise.race([
-        getDocFn(docRef),
+        getDoc(docRef),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('timeout de carregamento')), 4500)
         )
@@ -662,13 +720,8 @@
   }
 
   async function salvarNoFirestore() {
-    if (!docRef || !setDocFn) {
-      statusEl.innerText = '⚠️ Firebase indisponível no momento';
-      alert('Firebase ainda não inicializou. Aguarde alguns segundos e tente novamente.');
-      return;
-    }
     try {
-      await setDocFn(docRef, { dias: itinerario, ultimaAtualizacao: new Date().toISOString() });
+      await setDoc(docRef, { dias: itinerario, ultimaAtualizacao: new Date().toISOString() });
       statusEl.innerText = '💾 Salvo com sucesso no Firebase!';
     } catch (e) {
       alert('Erro ao salvar: ' + e.message);
@@ -676,32 +729,17 @@
     }
   }
 
-  async function inicializarFirebase() {
-    const [{ initializeApp }, { getFirestore, doc, getDoc, setDoc }] = await Promise.all([
-      import("firebase/app"),
-      import("firebase/firestore")
-    ]);
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    docRef = doc(db, "roteiros", "viagem2026");
-    getDocFn = getDoc;
-    setDocFn = setDoc;
-  }
-
   document.getElementById('saveToFirebase').addEventListener('click', salvarNoFirestore);
 
-  // Inicialização rápida (mostra cards antes de esperar SDK remota)
+  // Inicialização rápida (mostra cards antes de esperar dados da nuvem)
   itinerario = [...dadosIniciais];
   renderCards();
-  statusEl.innerText = '⚡ Carregando conexão com Firebase...';
-  inicializarFirebase()
-    .then(() => carregarDoFirestore())
+  statusEl.innerText = '⚡ Carregando dados...';
+  carregarDoFirestore()
     .catch((e) => {
-      console.warn('Falha ao inicializar Firebase:', e);
+      console.warn('Falha ao carregar do Firebase:', e);
       statusEl.innerText = '⚠️ Offline (dados locais)';
     });
-
-  // Funções já expostas acima em window.closeModal/window.saveEdit.
 </script>
 </body>
 </html>
