@@ -366,10 +366,6 @@
     }
 
     .install-button {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
       background: #1e4a2b;
       color: white;
       border: none;
@@ -380,29 +376,22 @@
       cursor: pointer;
       box-shadow: 0 8px 16px rgba(30,40,20,0.25);
       transition: 0.2s;
-      z-index: 100;
-      display: flex;
+      display: none;
       align-items: center;
       gap: 10px;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
     }
     .install-button.show {
-      display: flex;
-      animation: slideUp 0.3s ease-out;
+      display: inline-flex;
     }
     .install-button:hover {
       background: #2d6a3b;
       box-shadow: 0 12px 24px rgba(30,40,20,0.3);
       transform: translateY(-2px);
-    }
-    @keyframes slideUp {
-      from {
-        transform: translateY(100px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
     }
 
     @media (max-width: 640px) {
@@ -797,15 +786,24 @@
   let deferredPrompt;
   const installBtn = document.getElementById('installButton');
 
+  console.log('🔍 PWA: Verificando suporte...');
+
   // Registrar service worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => console.log('✅ Service Worker registrado'))
-      .catch(err => console.warn('⚠️ Erro ao registrar SW:', err));
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => {
+        console.log('✅ PWA: Service Worker registrado');
+      })
+      .catch(err => {
+        console.warn('⚠️ PWA: Erro ao registrar SW:', err);
+      });
+  } else {
+    console.log('⚠️ PWA: Service Worker não suportado');
   }
 
   // Capturar evento de instalação
   window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('✅ PWA: Prompt disponível - mostrando botão');
     e.preventDefault();
     deferredPrompt = e;
     installBtn.classList.add('show');
@@ -813,17 +811,21 @@
 
   // Clicar no botão dispara o prompt
   installBtn.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
+    console.log('👆 PWA: Botão clicado');
+    if (!deferredPrompt) {
+      console.log('⚠️ PWA: Prompt não disponível');
+      return;
+    }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`Usuário respondeu: ${outcome}`);
+    console.log(`📲 PWA: Usuário respondeu: ${outcome}`);
     deferredPrompt = null;
     installBtn.classList.remove('show');
   });
 
   // Esconder botão quando app é instalado
   window.addEventListener('appinstalled', () => {
-    console.log('✅ App instalado com sucesso!');
+    console.log('✅ PWA: App instalado com sucesso!');
     deferredPrompt = null;
     installBtn.classList.remove('show');
   });
